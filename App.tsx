@@ -10,9 +10,15 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ImageBackground
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+
+const backgroundAppApp = require('./assets/backgroundApp.png'); 
+const IconLogo = require('./assets/iconApp.png'); 
+const IconPlayer = require('./assets/user.png'); 
+
 
 // 🧩 1. Definimos la interfaz para un perfil
 interface Profile {
@@ -100,85 +106,97 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>👤 Perfiles</Text>
-
-      {profiles.length === 0 ? (
-        <Text style={{ textAlign: 'center', marginVertical: 20, color: '#999' }}>
-          No hay perfiles registrados
-        </Text>
-      ) : (
-        <FlatList
-          data={profiles}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              {item.photo ? (
-                <Image source={{ uri: item.photo }} style={styles.avatar} />
-              ) : (
-                <View style={styles.placeholder}>
-                  <Text style={{ color: '#777' }}>Sin foto</Text>
-                </View>
-              )}
-              <Text style={styles.name}>{item.name}</Text>
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => deleteProfile(item.id)}
-              >
-                <Text style={{ color: 'red', fontWeight: 'bold',  fontSize: 10 }}>❌</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        />
-      )}
-
-      <View style={{ marginTop: 20 }}>
-        <Button title="Agregar perfil" onPress={() => setModalVisible(true)} />
+    <ImageBackground 
+      source={backgroundAppApp} 
+      style={styles.backgroundImage} 
+      resizeMode="cover" // Esto asegura que la imagen cubra todo el espacio
+    >
+      <View style={styles.container}>
+      <View style={styles.boxTitleIcon}>
+        <Image source={IconLogo} style={styles.titleIcon}/>
       </View>
+      <View style={{ marginBottom: 10 }}>
+          <Button title="Jugar" onPress={() => setModalVisible(true)} />
+        </View>
+        {profiles.length === 0 ? (
+          <Text style={{ textAlign: 'center', marginVertical: 20, color: '#999' }}>
+            No hay perfiles registrados
+          </Text>
+        ) : (
+          <FlatList
+            data={profiles}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.card}>
+                {item.photo ? (
+                  <Image source={{ uri: item.photo }} style={styles.avatar} />
+                ) : (
+                <Image source={IconPlayer} style={styles.avatar}/>
+                )}
+                <Text style={styles.name}>{item.name.toLocaleUpperCase()}</Text>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => deleteProfile(item.id)}
+                >
+                  <Text style={{ color: 'red', fontWeight: 'bold',  fontSize: 10 }}>❌</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+        )}
 
-      {/* MODAL */}
-      <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.subtitle}>Nuevo perfil</Text>
+        <View style={{ marginTop: 20 }}>
+          <Button title="Agregar perfil" onPress={() => setModalVisible(true)} />
+        </View>
 
-            <TextInput
-              placeholder="Nombre"
-              style={styles.input}
-              value={name}
-              onChangeText={setName}
-            />
+        {/* MODAL */}
+        <Modal visible={modalVisible} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.subtitle}>Nuevo perfil</Text>
 
-            <TouchableOpacity onPress={pickImage} style={styles.photoButton}>
-              <Text style={{ color: 'white' }}>Elegir foto</Text>
-            </TouchableOpacity>
+              <TextInput
+                placeholder="Nombre"
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+              />
 
-            {photo && <Image source={{ uri: photo }} style={styles.preview} />}
+              <TouchableOpacity onPress={pickImage} style={styles.photoButton}>
+                <Text style={{ color: 'white' }}>Elegir foto</Text>
+              </TouchableOpacity>
 
-            <View style={styles.buttonsRow}>
-              <Button title="Guardar" onPress={addProfile} />
-              <Button title="Cancelar" color="red" onPress={() => setModalVisible(false)} />
+              {photo && <Image source={{ uri: photo }} style={styles.preview} />}
+
+              <View style={styles.buttonsRow}>
+                <Button title="Guardar" onPress={addProfile} />
+                <Button title="Cancelar" color="red" onPress={() => setModalVisible(false)} />
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </ImageBackground>
   );
 }
 
 // 🎨 ESTILOS
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1
+  },
   container: { 
     flex: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 30, 
-    backgroundColor: '#fff' 
+    paddingHorizontal: 12,
+    paddingVertical: 20, 
   },
-  title: { 
-    fontSize: 16, 
-    fontWeight: 'bold', 
-    textAlign: 'center', 
-    marginBottom: 10 
+  boxTitleIcon: {
+    width: '100%',
+    alignItems: 'center'
+  },
+  titleIcon: { 
+    width: 120,
+    height: 120,
   },
   card: {
     flexDirection: 'row',
@@ -191,15 +209,9 @@ const styles = StyleSheet.create({
   avatar: { 
     width: 55, 
     height: 55, 
-    borderRadius: 27.5 
-  },
-  placeholder: {
-    width: 55, 
-    height: 55, 
     borderRadius: 27.5,
-    backgroundColor: '#eee',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: 'black',
+    borderWidth: 2, 
   },
   name: { 
     flex: 1, 
