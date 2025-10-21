@@ -1,0 +1,5 @@
+git add .
+
+git commit -m "Descripción concisa de lo que hiciste hoy"
+
+git push
