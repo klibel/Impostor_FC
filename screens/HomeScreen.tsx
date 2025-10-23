@@ -221,6 +221,7 @@ const styles = StyleSheet.create({
     borderRadius: 27.5,
     borderColor: 'white',
     borderWidth: 2, 
+    backgroundColor: 'white'
   },
   name: { 
     flex: 1, 

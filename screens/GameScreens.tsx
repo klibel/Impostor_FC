@@ -103,6 +103,7 @@ const GameScreen = ({ navigation }: any) => {
 
   const deleteGame = () => {
     setGameParticipants([]);
+    setDisabledCards([]); // desbloquea todas las cartas
     setSelectedParticipants([]);
   };
 
@@ -240,16 +241,16 @@ const GameScreen = ({ navigation }: any) => {
                   ) : (
                     <Image source={IconPlayer} style={styles.playerPhoto}/>
                   )} 
-                  <Text style={styles.playerName}>{playerModal.name.toLocaleUpperCase().split(' ')[0]}</Text>
+                  <Text style={styles.playerName}>{playerModal.name.toLocaleUpperCase().split(' ').slice(0, 2).join(' ')}</Text>
                   
                   {playerModal.isImpostor ? (
-                    <Text style={styles.playerRoleImpostor}>IMPOSTORCITO 😈</Text>
+                    <Text style={styles.playerRoleImpostor}>IMPOSTORCITO</Text>
                   ) : (
                     <Text style={styles.playerRole}>{playerModal.playerName?.toLocaleUpperCase()}</Text>
                   )}
                   
                   <TouchableOpacity style={styles.closeButton} onPress={closePlayerModal}>
-                    <Text style={styles.closeText}>Cerrar</Text>
+                    <Text style={styles.closeText}>❌</Text>
                   </TouchableOpacity>
               </Animated.View>
             </Pressable>
@@ -386,7 +387,8 @@ const styles = StyleSheet.create({
     borderColor: '#28A745',
     borderWidth: 2, 
     position: 'absolute',
-    top: -22.5
+    top: -22.5,
+    backgroundColor: 'white'
   },
   cardText: { 
     fontSize: 8, 
@@ -395,13 +397,14 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.8)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   playerModalContainer: {
     width: '85%',
-    height: 250,
+    maxWidth: 400,
+    height: 230,
     backgroundColor: '#FFD700',
     borderRadius: 20,
     shadowColor: '#000',
@@ -412,49 +415,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   playerPhoto: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 3,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 6,
     borderColor: '#FFD700',
     marginBottom: 12,
     position: 'absolute',
-    top: -60
+    top: -75
   },
   playerName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#28A745',
     textAlign: 'center',
     marginBottom: 4,
   },
   playerRole: {
     fontSize: 18,
     color: '#222',
+    fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 16,
   },
   playerRoleImpostor: {
-    fontSize: 20,
+    fontSize: 16,
     color: 'red',
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 16,
+    letterSpacing: 4,
   },
   closeButton: {
-    backgroundColor: '#1e90ff',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    backgroundColor: 'rgb(255, 217, 0)',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 3,
+    borderColor: 'red',
     elevation: 3,
+    position: 'absolute',
+    bottom: -70,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   closeText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 24,
   },
   
   modalContainer: {
@@ -488,6 +496,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderColor: 'white',
     borderWidth: 2, 
+    backgroundColor: 'white'
   },
   impostorSelected: {
     borderWidth: 1,

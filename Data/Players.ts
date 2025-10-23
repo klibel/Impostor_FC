@@ -197,4 +197,15 @@ export const players = [
   "Heung-min Son",          // Tottenham (Corea del Sur)
   "Alexander Isak",         // Newcastle (Suecia)
   "Bruno Guimarães",
+  "Gerard Piqué", 
+  "Jamie Vardy",
+  "Mesut Özil",
+  "Isco",
+  "Ángel Di María",
+  "Nicolás Otamendi",
+  "Gonçalo Ramos",
+  "Endrick",
+  "Viktor Gyökeres",
+  "Florian Wirtz",
+  "Alejandro Garnacho"
 ];
