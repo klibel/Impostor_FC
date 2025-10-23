@@ -11,16 +11,18 @@ import {
   Animated,
   Easing,
   Dimensions,
-  Button,
+  FlatList,
+  Pressable
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { players } from '../Data/Players';
 import { MaterialIcons } from '@expo/vector-icons'; // o react-native-vector-icons
 
 
-const backgroundApp = require('../assets/backgroundApp.png');
+const backgroundGame = require('../assets/backgroundGame.png');
 const backgroundModal = require('../assets/backgroundModal.png');
 const IconLogo = require('../assets/iconApp.png');
+const IconPlayer = require('../assets/user.png');
 
 type Participant = {
   id: string;
@@ -34,6 +36,7 @@ const { width, height } = Dimensions.get('window');
 
 const GameScreen = ({ navigation }: any) => {
   const [profiles, setProfiles] = useState<Participant[]>([]);
+  const [disabledCards, setDisabledCards] = useState<string[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [numImpostors, setNumImpostors] = useState(1);
   const [selectedParticipants, setSelectedParticipants] = useState<Participant[]>([]);
@@ -94,6 +97,7 @@ const GameScreen = ({ navigation }: any) => {
   const newRound = () => {
     createGame();
     setRoundMessage('¡Nueva ronda generada!');
+    setDisabledCards([]); // desbloquea todas las cartas
     setTimeout(() => setRoundMessage(''), 2000);
   };
 
@@ -122,34 +126,34 @@ const GameScreen = ({ navigation }: any) => {
     }).start(() => setPlayerModal(null));
   };
 
-  const getCirclePositions = (count: number, radius: number) => {
-    const positions: { x: number; y: number }[] = [];
-    const centerX = width / 2 - 50;
-    const centerY = height / 2 - 50;
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * 2 * Math.PI;
-      positions.push({
-        x: centerX + radius * Math.cos(angle),
-        y: centerY + radius * Math.sin(angle),
-      });
-    }
-    return positions;
-  };
-
-  const positions = getCirclePositions(gameParticipants.length, 120);
+  const radius = 130; // un poco más de distancia
+  const cardSize = 80; // tu tamaño real de carta
+  
+  const centerX = width / 2; // centro real de la pantalla
+  const centerY = height / 2;
+  
+  // Cálculo corregido
+  const positions = gameParticipants.map((_, idx) => {
+    const offset = -Math.PI / 2;
+    const angle = (2 * Math.PI * idx) / gameParticipants.length + offset;
+    const x = centerX + radius * Math.cos(angle) - cardSize / 2;
+    const y = centerY + radius * Math.sin(angle) - cardSize / 2;
+    return { x, y };
+  });
+  
 
   return (
-    <ImageBackground source={backgroundApp} style={{ flex: 1 }}>
+    <ImageBackground source={backgroundGame} style={{ flex: 1 }}>
       <View style={styles.container}>
         {/* Logo central arriba */}
         <Image source={IconLogo} style={styles.logoTop} />
 
-              <TouchableOpacity
-                  style={styles.fabButton}
-                  onPress={() => navigation.goBack()}
-                >
-                  <MaterialIcons name="home" size={28} color="#fff" />
-                </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.fabButton}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialIcons name="home" size={28} color="#fff" />
+        </TouchableOpacity>
         {!gameParticipants.length && (
           <TouchableOpacity
           style={styles.Button}
@@ -163,16 +167,16 @@ const GameScreen = ({ navigation }: any) => {
           <>
             <View style={styles.topButtons}>
               <TouchableOpacity
-                  style={styles.ButtonRed}
+                  style={[styles.ButtonRed, {width: '45%'}]}
                   onPress={deleteGame}
                 >
-                 <Text style={{ color: 'white'}}>Eliminar Partida</Text>
+                 <Text style={{ color: 'white', fontWeight: 'bold'}}>Eliminar Partida</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.Button}
+                style={[styles.Button, {width: '45%'}]}
                 onPress={newRound}
               >
-                <Text style={{ color: 'white'}}>Nueva Ronda</Text>
+                <Text style={{ color: 'white', fontWeight: 'bold'}}>Nueva Ronda</Text>
               </TouchableOpacity>
             </View>
 
@@ -184,11 +188,11 @@ const GameScreen = ({ navigation }: any) => {
             <Image
               source={IconLogo}
               style={{
-                width: 30,
-                height: 30,
+                width: 90,
+                height: 90,
                 position: 'absolute',
-                top: height / 2 - 15,
-                left: width / 2 - 15,
+                top: height / 2 - 45,
+                left: width / 2 - 45,
               }}
             />
 
@@ -198,10 +202,25 @@ const GameScreen = ({ navigation }: any) => {
               return (
                 <TouchableOpacity
                   key={p.id}
-                  style={[styles.card, { position: 'absolute', left: pos.x, top: pos.y }]}
-                  onPress={() => openPlayerModal(p)}
+                  disabled={disabledCards.includes(p.id)}
+                  style={[
+                    styles.card,
+                    { position: 'absolute', left: pos.x, top: pos.y },
+                    disabledCards.includes(p.id) && { opacity: 0.3 }, // se ve “bloqueada”
+                  ]}
+                  onPress={() => {
+                    if (!disabledCards.includes(p.id)) {
+                      openPlayerModal(p);
+                      setDisabledCards((prev) => [...prev, p.id]);
+                    }
+                  }}
                 >
-                  <Text style={styles.cardText}>{p.name}</Text>
+                  {p.photo ? (
+                    <Image source={{ uri: p.photo }} style={styles.avatarCard} />
+                  ) : (
+                    <Image source={IconPlayer} style={styles.avatarCard}/>
+                  )} 
+                  <Text style={styles.cardText}>{p.name.toLocaleUpperCase().split(' ')[0]}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -211,67 +230,102 @@ const GameScreen = ({ navigation }: any) => {
         {/* Modal jugador */}
         <Modal visible={!!playerModal} transparent animationType="none">
           {playerModal && (
-            <Animated.View style={[styles.playerModalContainer, { opacity: fadeAnim }]}>
-              <View style={styles.playerModalContent}>
-                <Image source={{ uri: playerModal.photo }} style={styles.playerPhoto} />
-                <Text style={styles.playerName}>{playerModal.name}</Text>
-                <Text style={styles.playerRole}>{playerModal.playerName}</Text>
-                <Button title="Cerrar" onPress={closePlayerModal} />
-              </View>
-            </Animated.View>
+            <Pressable
+              style={styles.modalOverlay}
+              onPress={closePlayerModal}
+            >
+              <Animated.View style={[styles.playerModalContainer, { opacity: fadeAnim }]}>
+                {playerModal.photo ? (
+                    <Image source={{ uri: playerModal.photo }} style={styles.playerPhoto} />
+                  ) : (
+                    <Image source={IconPlayer} style={styles.playerPhoto}/>
+                  )} 
+                  <Text style={styles.playerName}>{playerModal.name.toLocaleUpperCase().split(' ')[0]}</Text>
+                  
+                  {playerModal.isImpostor ? (
+                    <Text style={styles.playerRoleImpostor}>IMPOSTORCITO 😈</Text>
+                  ) : (
+                    <Text style={styles.playerRole}>{playerModal.playerName?.toLocaleUpperCase()}</Text>
+                  )}
+                  
+                  <TouchableOpacity style={styles.closeButton} onPress={closePlayerModal}>
+                    <Text style={styles.closeText}>Cerrar</Text>
+                  </TouchableOpacity>
+              </Animated.View>
+            </Pressable>
           )}
         </Modal>
 
-        {/* Modal crear partida */}
-        <Modal visible={modalVisible} animationType="slide">
-          <ImageBackground source={backgroundModal} style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Crear Partida</Text>
-            <Text style={{ color: 'white' }}>Selecciona número de impostores:</Text>
-            <View style={styles.impostorButtons}>
-              {[1, 2, 3].map((num) => (
-                <TouchableOpacity
-                  key={num}
-                  style={[
-                    styles.impostorButton,
-                    numImpostors === num && styles.impostorSelected,
-                  ]}
-                  onPress={() => setNumImpostors(num)}
-                >
-                  <Text style={styles.impostorText}>{num}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
 
-            <Text style={{ color: 'white' }}>Selecciona jugadores:</Text>
-            {profiles.map((item) => {
-              const selected = !!selectedParticipants.find((p) => p.id === item.id);
-              return (
+        {/* Modal crear partida */}
+        <Modal visible={modalVisible} animationType="slide" transparent>
+          <ImageBackground source={backgroundModal} style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Crear Partida</Text>
+              <Text style={{ color: 'white', marginVertical: 5 }}>Selecciona número de impostores:</Text>
+
+              <View style={styles.impostorButtons}>
+                {[1, 2, 3].map((num) => (
+                  <TouchableOpacity
+                    key={num}
+                    style={[
+                      styles.impostorButton,
+                      numImpostors === num && styles.impostorSelected,
+                    ]}
+                    onPress={() => setNumImpostors(num)}
+                  >
+                    <Text style={styles.impostorText}>{num}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={{ color: 'white', marginBottom: 8 }}>Selecciona jugadores:</Text>
+
+              {/* Aquí agregamos el scroll */}
+              <FlatList
+                data={profiles}
+                keyExtractor={(item) => item.id.toString()}
+                contentContainerStyle={styles.participantList}
+                showsVerticalScrollIndicator={false}
+                style={{ flexGrow: 0, maxHeight: 'auto' }} // altura máxima para scroll dentro del modal
+                renderItem={({ item }) => {
+                  const selected = !!selectedParticipants.find((p) => p.id === item.id);
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        styles.participantItem,
+                        selected && styles.selectedParticipant,
+                      ]}
+                      onPress={() => toggleSelectParticipant(item)}
+                    >
+                      {item.photo ? (
+                        <Image source={{ uri: item.photo }} style={styles.avatar} />
+                      ) : (
+                        <Image source={IconPlayer} style={styles.avatar}/>
+                      )}
+                      <Text style={{ color: 'white', marginLeft: 10, fontWeight: 'bold' }}>{item.name.toUpperCase().split(' ').slice(0, 2).join(' ')}</Text>
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+
+              <View style={styles.modalButtonsContainer}>
                 <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.participantItem,
-                    selected && styles.selectedParticipant,
-                  ]}
-                  onPress={() => toggleSelectParticipant(item)}
+                  style={styles.ButtonRed}
+                  onPress={() => setModalVisible(false)}
                 >
-                  <Text style={{ color: 'white' }}>{item.name.toLocaleUpperCase()}</Text>
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>Cancelar</Text>
                 </TouchableOpacity>
-              );
-            })}
-            <TouchableOpacity
-              style={styles.ButtonRed}
-              onPress={() => setModalVisible(false)}
-              >
-              <Text style={{ color: 'white'}}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.Button}
-              onPress={createGame}
-              >
-              <Text style={{ color: 'white'}}>Crear Partida</Text>
-            </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.Button}
+                  onPress={createGame}
+                >
+                  <Text style={{ color: 'white', fontWeight: 'bold' }}>Crear Partida</Text>
+                </TouchableOpacity>
+              </View>
           </ImageBackground>
         </Modal>
+
       </View>
     </ImageBackground>
   );
@@ -279,7 +333,7 @@ const GameScreen = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, 
-    padding: 20 
+    padding: 10,
   },
   logoTop: { 
     width: 120, 
@@ -293,9 +347,9 @@ const styles = StyleSheet.create({
   },
   roundMessage: { 
     textAlign: 'center', 
-    color: '#00f', 
+    color: 'red', 
     fontWeight: 'bold', 
-    marginBottom: 10 
+    marginBottom: 15 
   },
   Button: {
     backgroundColor: '#28A745',
@@ -312,10 +366,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   card: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-    backgroundColor: '#fff',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: '#28A745',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -323,19 +379,142 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
+  avatarCard: {
+    width: 45, 
+    height: 45, 
+    borderRadius: 22.5,
+    borderColor: '#28A745',
+    borderWidth: 2, 
+    position: 'absolute',
+    top: -22.5
+  },
   cardText: { 
-    fontSize: 14, 
-    fontWeight: 'bold' 
+    fontSize: 8, 
+    fontWeight: 'bold',
+    color: '#28A745'
   },
-  modalContainer: { 
-    flex: 1, 
-    padding: 20, 
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  modalTitle: { 
-    fontSize: 22, 
-    fontWeight: 'bold', 
-    textAlign: "center",
-    color: 'white'
+  playerModalContainer: {
+    width: '85%',
+    height: 250,
+    backgroundColor: '#FFD700',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  playerPhoto: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: '#FFD700',
+    marginBottom: 12,
+    position: 'absolute',
+    top: -60
+  },
+  playerName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  playerRole: {
+    fontSize: 18,
+    color: '#222',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  playerRoleImpostor: {
+    fontSize: 20,
+    color: 'red',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  closeButton: {
+    backgroundColor: '#1e90ff',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  closeText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
+    padding: 15,
+  },
+  modalTitle: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center'
+  },
+  impostorButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 5,
+  },
+  impostorButton: {
+    padding: 8,
+    marginHorizontal: 8,
+    borderRadius: 8,
+    borderColor: 'white',
+    borderWidth: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  avatar: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20,
+    borderColor: 'white',
+    borderWidth: 2, 
+  },
+  impostorSelected: {
+    borderWidth: 1,
+    borderColor: '#28A745',
+  },
+  participantList: {
+    width: '100%',
+  },
+  participantItem: {
+    padding: 12,
+    marginVertical: 4,
+    borderRadius: 8,
+    borderColor: 'white',
+    borderWidth: .5,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  selectedParticipant: {
+    borderWidth: 1,
+    borderColor: '#28A745',
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+    width: '100%',
   },
   fabButton: {
     position: 'absolute',
@@ -352,67 +531,11 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 6,
   },  
-  impostorButtons: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-around', 
-    marginVertical: 10 
-  },
-  impostorButton: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#888',
-    borderRadius: 8,
-    width: 40,
-    alignItems: 'center',
-  },
-  impostorSelected: { 
-    borderColor: '#00f', 
-    borderWidth: 2 
-  },
-  impostorText: { 
-    fontSize: 16, 
+  impostorText: {
     fontWeight: 'bold',
-    color: 'white'
-  },
-  participantItem: { 
-    padding: 13, 
-    marginVertical: 2, 
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', 
-    borderRadius: 8,
-    borderWidth: .5,
-    borderColor: 'white'
-  },
-  selectedParticipant: { 
-    backgroundColor: '#add8e6' 
-  },
-  playerModalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  playerModalContent: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    width: 300,
-  },
-  playerPhoto: { 
-    width: 120, 
-    height: 120, 
-    borderRadius: 60, 
-    marginBottom: 10 
-  },
-  playerName: { 
-    fontSize: 20, 
-    fontWeight: 'bold', 
-    marginBottom: 5 
-  },
-  playerRole: { 
-    fontSize: 18, 
-    color: '#555', 
-    marginBottom: 15 
+    color: 'white',
+    marginVertical: 4,
+    marginHorizontal: 8
   },
 });
 

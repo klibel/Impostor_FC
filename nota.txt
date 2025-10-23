@@ -1,5 +1,12 @@
+# 1. Revisa qué archivos has modificado (opcional)
+git status
+
+# 2. Agrega los archivos modificados a la zona de preparación (staging)
 git add .
+# o: git add ruta/del/archivo.js
 
-git commit -m "Descripción concisa de lo que hiciste hoy"
+# 3. Haz el commit con un mensaje descriptivo
+git commit -m "feat: Implementar la lista de 240+ jugadores en GameScreen"
 
-git push
+# 4. Sube tu nueva rama al repositorio remoto
+git push origin nueva-funcionalidad-hoy

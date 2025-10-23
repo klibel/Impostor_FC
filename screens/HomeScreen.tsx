@@ -140,7 +140,7 @@ export default function HomeScreen() {
                 ) : (
                 <Image source={IconPlayer} style={styles.avatar}/>
                 )}
-                <Text style={styles.name}>{item.name.toLocaleUpperCase()}</Text>
+                <Text style={styles.name}>{item.name.toLocaleUpperCase().split(' ').slice(0, 2).join(' ')}</Text>
                 <TouchableOpacity
                   style={styles.deleteButton}
                   onPress={() => deleteProfile(item.id)}
