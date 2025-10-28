@@ -4,11 +4,11 @@
     "slug": "IMPOSTOR_FC",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/iconBckgroundApp.png",
+    "icon": "./assets/IconBackgroundApp.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/iconBckgroundApp.png",
+      "image": "./assets/IconBackgroundApp.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,14 +17,20 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/iconBckgroundApp.png",
+        "foregroundImage": "./assets/IconBackgroundApp.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.romerocode.IMPOSTOR_FC"
     },
     "web": {
-      "favicon": "./assets/iconBckgroundApp.png"
+      "favicon": "./assets/IconBackgroundApp.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "26cd2f56-65a1-4e4a-a5d0-36cf338138fe"
+      }
     }
   }
 }

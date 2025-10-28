@@ -261,54 +261,56 @@ const GameScreen = ({ navigation }: any) => {
         {/* Modal crear partida */}
         <Modal visible={modalVisible} animationType="slide" transparent>
           <ImageBackground source={backgroundModal} style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Crear Partida</Text>
-              <Text style={{ color: 'white', marginVertical: 5 }}>Selecciona número de impostores:</Text>
+              <View style={{ maxHeight: '90%'}}>
+                <Text style={styles.modalTitle}>Crear Partida</Text>
+              
+                <Text style={{ color: 'white', marginVertical: 5 }}>Selecciona número de impostores:</Text>
 
-              <View style={styles.impostorButtons}>
-                {[1, 2, 3].map((num) => (
-                  <TouchableOpacity
-                    key={num}
-                    style={[
-                      styles.impostorButton,
-                      numImpostors === num && styles.impostorSelected,
-                    ]}
-                    onPress={() => setNumImpostors(num)}
-                  >
-                    <Text style={styles.impostorText}>{num}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <Text style={{ color: 'white', marginBottom: 8 }}>Selecciona jugadores:</Text>
-
-              {/* Aquí agregamos el scroll */}
-              <FlatList
-                data={profiles}
-                keyExtractor={(item) => item.id.toString()}
-                contentContainerStyle={styles.participantList}
-                showsVerticalScrollIndicator={false}
-                style={{ flexGrow: 0, maxHeight: 'auto' }} // altura máxima para scroll dentro del modal
-                renderItem={({ item }) => {
-                  const selected = !!selectedParticipants.find((p) => p.id === item.id);
-                  return (
+                <View style={styles.impostorButtons}>
+                  {[1, 2, 3].map((num) => (
                     <TouchableOpacity
+                      key={num}
                       style={[
-                        styles.participantItem,
-                        selected && styles.selectedParticipant,
+                        styles.impostorButton,
+                        numImpostors === num && styles.impostorSelected,
                       ]}
-                      onPress={() => toggleSelectParticipant(item)}
+                      onPress={() => setNumImpostors(num)}
                     >
-                      {item.photo ? (
-                        <Image source={{ uri: item.photo }} style={styles.avatar} />
-                      ) : (
-                        <Image source={IconPlayer} style={styles.avatar}/>
-                      )}
-                      <Text style={{ color: 'white', marginLeft: 10, fontWeight: 'bold' }}>{item.name.toUpperCase().split(' ').slice(0, 2).join(' ')}</Text>
+                      <Text style={styles.impostorText}>{num}</Text>
                     </TouchableOpacity>
-                  );
-                }}
-              />
+                  ))}
+                </View>
 
+                <Text style={{ color: 'white', marginBottom: 8 }}>Selecciona jugadores:</Text>
+
+                {/* Aquí agregamos el scroll */}
+                <FlatList
+                  data={profiles}
+                  keyExtractor={(item) => item.id.toString()}
+                  contentContainerStyle={styles.participantList}
+                  showsVerticalScrollIndicator={false}
+                  style={{ flexGrow: 0, maxHeight: 'auto' }} // altura máxima para scroll dentro del modal
+                  renderItem={({ item }) => {
+                    const selected = !!selectedParticipants.find((p) => p.id === item.id);
+                    return (
+                      <TouchableOpacity
+                        style={[
+                          styles.participantItem,
+                          selected && styles.selectedParticipant,
+                        ]}
+                        onPress={() => toggleSelectParticipant(item)}
+                      >
+                        {item.photo ? (
+                          <Image source={{ uri: item.photo }} style={styles.avatar} />
+                        ) : (
+                          <Image source={IconPlayer} style={styles.avatar}/>
+                        )}
+                        <Text style={{ color: 'white', marginLeft: 10, fontWeight: 'bold' }}>{item.name.toUpperCase().split(' ').slice(0, 2).join(' ')}</Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+              </View>
               <View style={styles.modalButtonsContainer}>
                 <TouchableOpacity
                   style={styles.ButtonRed}
@@ -522,7 +524,6 @@ const styles = StyleSheet.create({
   modalButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: 10,
     width: '100%',
   },
   fabButton: {

@@ -10,3 +10,11 @@ git commit -m "feat: Implementar la lista de 240+ jugadores en GameScreen"
 
 # 4. Sube tu nueva rama al repositorio remoto
 git push origin nueva-funcionalidad-hoy
+
+
+
+
+
+export EXPO_TOKEN="MqOtgFMsDgJAsybJ5bYoF3yA4yZAiZJWmWGSEH06"
+
+eas build --platform android --profile production
